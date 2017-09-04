@@ -5,7 +5,7 @@ from apikey import api_key
 class WowAPI:
     def __init__(self):  # Initiate the constructor
         self.session = aiohttp.ClientSession()
-        self.api_key = 'nfw4c25p2rxymqp2fazd5sy4e8d2v6j7'
+        self.api_key = api_key
         self.base_url = 'https://eu.api.battle.net/wow/'  # Define the base URL for all API calls
 
     # Get the character stats of a selected character in a selected realm
