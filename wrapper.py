@@ -41,7 +41,7 @@ class WowAPI:
             reason = parsed_json.reason
             return {'reason': reason}
 
-    #TODO: Finish this function
+    #TODO: Finish this function - probably doesn't work
     async def get_talents(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=talents&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
