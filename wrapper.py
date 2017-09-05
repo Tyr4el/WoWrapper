@@ -2,6 +2,7 @@ import aiohttp
 import json
 from apikey import api_key
 
+
 class WowAPI:
     def __init__(self):  # Initiate the constructor
         self.session = aiohttp.ClientSession()
@@ -53,7 +54,7 @@ class WowAPI:
             spec = [{'name': p.name} for p in parsed_json.talents.talents]
 
         if resp.status == 200:
-            return [name, realm, talents]
+            return [name, realm, talents, spec]
         elif resp.status == 404:
             reason = parsed_json.reason
             return {'reason': reason}
@@ -66,6 +67,20 @@ class WowAPI:
 
         if resp.status == 200:
             return professions
+        elif resp.status == 404:
+            reason = parsed_json.reason
+            return reason
+
+    async def get_reputation(self, realm, character):
+        async with self.session.get(self.base_url +
+                                            'character/{0}/{1}?fields=reputation&locale=en_GB&apikey='
+                                            '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
+            parsed_json = json.loads(await resp.text())
+            faction = [{'name': p.name, 'standing': p.standing, 'value': p.value, 'max': p.max} for p in
+                       parsed_json.reputation]
+
+        if resp.status == 200:
+            return faction
         elif resp.status == 404:
             reason = parsed_json.reason
             return reason
