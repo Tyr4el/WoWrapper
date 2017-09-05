@@ -24,11 +24,11 @@ class WowAPI:
             versatility = parsed_json.stats.versatility     # Versatility
 
         if resp.status == 200:  # Check for a 200 response code and return the variables as a dict
-            return {'name': name, 'intellect': intellect, 'strength': strength, 'agility': agility, 'stamina':
+            return True, {'name': name, 'intellect': intellect, 'strength': strength, 'agility': agility, 'stamina':
                 stamina, 'haste': haste, 'crit': crit, 'versatility': versatility}
         elif resp.status == 404:  # If the code comes back as 404, return the reason as a dict value
             reason = parsed_json.reason
-            return {'reason': reason}
+            return False, reason
 
     async def get_realm_status(self, realm):
         async with self.session.get(self.base_url + 'realm/status?locale=en_GB&realms={0}&apikey={apikey}'.format(
@@ -37,12 +37,11 @@ class WowAPI:
             realm = [{'status': p.status, 'name': p.name} for p in parsed_json.realms]
 
         if resp.status == 200:
-            return realm
+            return True, realm
         elif resp.status == 404:
             reason = parsed_json.reason
-            return {'reason': reason}
+            return False, reason
 
-    #  TODO: Finish this function - probably doesn't work.  Can't figure out the loop
     async def get_talents(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=talents&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
@@ -50,8 +49,18 @@ class WowAPI:
             char_name = parsed_json.name
             realm = parsed_json.realm
 
+            talent = []
             for item in parsed_json.talents:
-                talents = [item.tier, item.spell.name, item.spec.name, item.spell.icon]
+                for item2 in item.talents:
+                    talents = {'tier': item2.tier, 'name': item2.spell.name, 'spec': item2.spec.name,
+                               'icon': item2.spell.icon}
+                    talent.append(talents)
+
+        if resp.status == 200:
+            return True, char_name, realm, talents
+        elif resp.status == 404:
+            reason = parsed_json.reason
+            return False, reason
 
     async def get_professions(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=professions&locale=en_GB&apikey='
@@ -63,10 +72,10 @@ class WowAPI:
                            parsed_json.professions.primary]
 
         if resp.status == 200:
-            return [char_name, realm, professions]
+            return True, char_name, realm, professions
         elif resp.status == 404:
             reason = parsed_json.reason
-            return reason
+            return False, reason
 
     async def get_reputation(self, realm, character):
         async with self.session.get(self.base_url +
@@ -79,10 +88,10 @@ class WowAPI:
                        parsed_json.reputation]
 
         if resp.status == 200:
-            return [char_name, realm, faction]
+            return True, char_name, realm, faction
         elif resp.status == 404:
             reason = parsed_json.reason
-            return reason
+            return False, reason
 
     #  TODO: Finish this function.  Need to get item name, icon, quality and if it's part of a set
     async def get_gear(self, realm, character):
@@ -107,8 +116,8 @@ class WowAPI:
             mounts = [{'name': mount.name, 'icon': mount.icon} for mount in parsed_json.mounts.collected]
 
             if resp.status == 200:
-                return [char_name, realm, mounts_collected, mounts_not_collected, mounts]
+                return True, char_name, realm, mounts_collected, mounts_not_collected, mounts
             elif resp.status == 404:
                 reason = parsed_json.reason
-                return reason
+                return False, reason
 
