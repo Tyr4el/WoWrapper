@@ -8,6 +8,17 @@ class WowAPI:
         self.session = aiohttp.ClientSession()
         self.api_key = api_key
         self.base_url = 'https://eu.api.battle.net/wow/'  # Define the base URL for all API calls
+        self.base_cdn = 'https://blzmedia-a.akamaihd.net/wow/icons/'
+
+    def create_icon_url(self, icon):
+        small = self.base_cdn + '18/' + icon + '.jpg'
+        med = self.base_cdn + '36/' + icon + '.jpg'
+        large = self.base_cdn + '56/' + icon + '.jpg'
+
+        return small, med, large
+
+    def parse_gear(self, item):
+        return {'name': item.name, 'icon': self.create_icon_url(item.icon), 'quality': item.quality}
 
     # Get the character stats of a selected character in a selected realm
     async def get_character_stats(self, realm, character):
@@ -52,8 +63,8 @@ class WowAPI:
             talent = []
             for item in parsed_json.talents:
                 for item2 in item.talents:
-                    talents = {'tier': item2.tier, 'name': item2.spell.name, 'spec': item2.spec.name,
-                               'icon': item2.spell.icon}
+                    talents = {'tier': item2.tier, 'name': self.create_icon_url(item2.spell.name),
+                               'spec': item2.spec.name, 'icon': item2.spell.icon}
                     talent.append(talents)
 
         if resp.status == 200:
@@ -68,8 +79,8 @@ class WowAPI:
             parsed_json = json.loads(await resp.text())
             char_name = parsed_json.name
             realm = parsed_json.realm
-            professions = [{'name': p.name, 'icon': p.icon, 'rank': p.rank, 'max': p.max} for p in
-                           parsed_json.professions.primary]
+            professions = [{'name': p.name, 'icon': self.create_icon_url(p.icon), 'rank': p.rank, 'max': p.max}
+                           for p in parsed_json.professions.primary]
 
         if resp.status == 200:
             return True, char_name, realm, professions
@@ -103,34 +114,21 @@ class WowAPI:
             realm = parsed_json.realm
             average_item_level = parsed_json.items.averageItemLevel
             average_item_level_equipped = parsed_json.items.averageItemLevelEquipped
-            head = {'name': parsed_json.items.head.name, 'icon': parsed_json.items.head.icon, 'quality':
-                parsed_json.items.head.quality}
-            neck = {'name': parsed_json.items.neck.name, 'icon': parsed_json.items.neck.icon, 'quality':
-                parsed_json.items.neck.quality}
-            shoulder = {'name': parsed_json.items.shoulder.name, 'icon': parsed_json.items.shoulder.icon, 'quality':
-                parsed_json.items.shoulder.quality}
-            back = {'name': parsed_json.items.back.name, 'icon': parsed_json.items.back.icon, 'quality':
-                parsed_json.items.back.quality}
-            chest = {'name': parsed_json.items.chest.name, 'icon': parsed_json.items.chest.icon, 'quality':
-                parsed_json.items.chest.quality}
-            wrist = {'name': parsed_json.items.wrist.name, 'icon': parsed_json.items.wrist.icon, 'quality':
-                parsed_json.items.wrist.quality}
-            hands = {'name': parsed_json.items.hands.name, 'icon': parsed_json.items.hands.icon, 'quality':
-                parsed_json.items.hands.quality}
-            waist = {'name': parsed_json.items.waist.name, 'icon': parsed_json.items.waist.icon, 'quality':
-                parsed_json.items.waist.quality}
-            legs = {'name': parsed_json.items.legs.name, 'icon': parsed_json.items.legs.icon, 'quality':
-                parsed_json.items.legs.quality}
-            feet = {'name': parsed_json.items.feet.name, 'icon': parsed_json.items.feet.icon, 'quality':
-                parsed_json.items.feet.quality}
-            finger1 = {'name': parsed_json.items.finger1.name, 'icon': parsed_json.items.finger1.icon, 'quality':
-                parsed_json.items.finger1.quality}
-            finger2 = {'name': parsed_json.items.finger2.name, 'icon': parsed_json.items.finger2.icon, 'quality':
-                parsed_json.items.finger2.quality}
-            trinket1 = {'name': parsed_json.items.trinket1.name, 'icon': parsed_json.items.trinket1.icon, 'quality':
-                parsed_json.items.trinket1.quality}
-            trinket2 = {'name': parsed_json.items.trinket2.name, 'icon': parsed_json.items.trinket2.icon, 'quality':
-                parsed_json.items.trinket2.quality}
+
+            head = self.parse_gear(parsed_json.items.head)
+            neck = self.parse_gear(parsed_json.items.neck)
+            shoulder = self.parse_gear(parsed_json.items.shoulder)
+            back = self.parse_gear(parsed_json.items.back)
+            chest = self.parse_gear(parsed_json.items.chest)
+            wrist = self.parse_gear(parsed_json.items.wrist)
+            hands = self.parse_gear(parsed_json.items.hands)
+            waist = self.parse_gear(parsed_json.items.waist)
+            legs = self.parse_gear(parsed_json.items.legs)
+            feet = self.parse_gear(parsed_json.items.feet)
+            finger1 = self.parse_gear(parsed_json.items.finger1)
+            finger2 = self.parse_gear(parsed_json.items.finger2)
+            trinket1 = self.parse_gear(parsed_json.items.trinket1)
+            trinket2 = self.parse_gear(parsed_json.items.trinket2)
 
             if resp.status == 200:
                 return True, char_name, realm, average_item_level, average_item_level_equipped, head, neck, shoulder,\
@@ -148,7 +146,8 @@ class WowAPI:
             realm = parsed_json.realm
             mounts_collected = parsed_json.mounts.numCollected
             mounts_not_collected = parsed_json.mounts.numNotCollected
-            mounts = [{'name': mount.name, 'icon': mount.icon} for mount in parsed_json.mounts.collected]
+            mounts = [{'name': mount.name, 'icon': self.create_icon_url(mount.icon)} for mount in
+                      parsed_json.mounts.collected]
 
             if resp.status == 200:
                 return True, char_name, realm, mounts_collected, mounts_not_collected, mounts
