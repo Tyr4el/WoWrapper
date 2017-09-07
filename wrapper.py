@@ -163,13 +163,14 @@ class WowAPI:
 
             progression = []
             for raid in parsed_json.progression:
-                completed_raid = {'name': raid.name, 'lfr': raid.lfr, 'normal': raid.normal, 'heroic': raid.heroic,
-                                  'mythic': raid.mythic}
-                progression.append(completed_raid)
-                for boss in raid:
+                bosses = []
+                for boss in raid.bosses:
                     completed_boss = {'name': boss.name, 'lfr kills': boss.lfrKills, 'normal kills': boss.normalKills,
                                       'heroic kills': boss.heroicKills, 'mythic kills': boss.mythicKills}
-                    progression.append(completed_boss)
+                    bosses.append(completed_boss)
+                    completed_raid = {'name': raid.name, 'lfr': raid.lfr, 'normal': raid.normal, 'heroic':
+                        raid.heroic, 'mythic': raid.mythic, 'bosses': bosses}
+                    progression.append(completed_raid)
 
             if resp.status == 200:
                 return True, char_name, realm, progression
