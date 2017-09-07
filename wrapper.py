@@ -104,7 +104,6 @@ class WowAPI:
             reason = parsed_json.reason
             return False, reason
 
-    #  TODO: Finish this function.  Need to get item name, icon, quality and if it's part of a set
     async def get_gear(self, realm, character):
         async with self.session.get(self.base_url +
                                             'character/{0}/{1}?fields=items&locale=en_GB&apikey={apikey}'.format(
@@ -154,4 +153,29 @@ class WowAPI:
             elif resp.status == 404:
                 reason = parsed_json.reason
                 return False, reason
+
+    async def get_progression(self, realm, character):
+        async with self.session.get(self.base_url + 'character/{0}/{1}?fields=progression&locale=en_GB&apikey='
+                                                    '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
+            parsed_json = json.loads(await resp.text())
+            char_name = parsed_json.name
+            realm = parsed_json.realm
+
+            progression = []
+            for raid in parsed_json.progression:
+                completed_raid = {'name': raid.name, 'lfr': raid.lfr, 'normal': raid.normal, 'heroic': raid.heroic,
+                                  'mythic': raid.mythic}
+                progression.append(completed_raid)
+                for boss in raid:
+                    completed_boss = {'name': boss.name, 'lfr kills': boss.lfrKills, 'normal kills': boss.normalKills,
+                                      'heroic kills':
+                        boss.heroicKills, 'mythic kills': boss.mythicKills}
+                    progression.append(completed_boss)
+
+            if resp.status == 200:
+                return True, char_name, realm, progression
+            elif resp.status == 404:
+                reason = parsed_json.reason
+                return False, reason
+
 
