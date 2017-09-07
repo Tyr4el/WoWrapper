@@ -168,8 +168,7 @@ class WowAPI:
                 progression.append(completed_raid)
                 for boss in raid:
                     completed_boss = {'name': boss.name, 'lfr kills': boss.lfrKills, 'normal kills': boss.normalKills,
-                                      'heroic kills':
-                        boss.heroicKills, 'mythic kills': boss.mythicKills}
+                                      'heroic kills': boss.heroicKills, 'mythic kills': boss.mythicKills}
                     progression.append(completed_boss)
 
             if resp.status == 200:
