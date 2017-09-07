@@ -8,11 +8,7 @@ class Spells:
 
     def get_spell(self, spell_name):
         for spell in self.parsed_json:
-            if spell.name == spell_name:
-                spell = {'name': spell_name, 'description': spell.description}
-
-        return True, spell
-
-
-s = Spells()
-s.get_spell('Frostbolt')
+            if spell['Name'] == spell_name:
+                return True, {'name': spell_name, 'description': spell['Description'], 'id': spell['m_ID']}
+            else:
+                return False
