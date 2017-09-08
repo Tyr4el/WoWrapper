@@ -19,7 +19,7 @@ class WowAPI:
         return small, med, large
 
     def parse_gear(self, item):
-        return {'name': item.name, 'icon': self.create_icon_url(item.icon), 'quality': item.quality}
+        return {'name': item['name'], 'icon': self.create_icon_url(item['icon']), 'quality': item['quality']}
 
     def close(self):
         self.session.close()
@@ -49,7 +49,7 @@ class WowAPI:
         async with self.session.get(self.base_url + 'realm/status?locale=en_GB&realms={0}&apikey={apikey}'.format(
                 realm, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            realm = [{'status': p.status, 'name': p.name} for p in parsed_json.realms]
+            realm = [{'status': p['status'], 'name': p['name']} for p in parsed_json['realms']]
 
         if resp.status == 200:
             return True, realm
@@ -61,15 +61,15 @@ class WowAPI:
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=talents&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            char_name = parsed_json.name
-            realm = parsed_json.realm
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
 
-            talent = []
-            for item in parsed_json.talents:
-                for item2 in item.talents:
-                    talents = {'tier': item2.tier, 'name': self.create_icon_url(item2.spell.name),
-                               'spec': item2.spec.name, 'icon': item2.spell.icon}
-                    talent.append(talents)
+            talents = []
+            for item in parsed_json['talents']:
+                for item2 in item['talents']:
+                    talent = {'tier': item2['tier'], 'name': self.create_icon_url(item2['spell']['name']),
+                               'spec': item2['spec']['name'], 'icon': item2['spell']['icon']}
+                    talents.append(talent)
 
         if resp.status == 200:
             return True, char_name, realm, talents
@@ -81,10 +81,11 @@ class WowAPI:
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=professions&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            char_name = parsed_json.name
-            realm = parsed_json.realm
-            professions = [{'name': p.name, 'icon': self.create_icon_url(p.icon), 'rank': p.rank, 'max': p.max}
-                           for p in parsed_json.professions.primary]
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
+            professions = [{'name': p['name'], 'icon': self.create_icon_url(p['icon']), 'rank': p['rank'],
+                            'max': p['max']}
+                           for p in parsed_json['professions']['primary']]
 
         if resp.status == 200:
             return True, char_name, realm, professions
@@ -97,10 +98,10 @@ class WowAPI:
                                             'character/{0}/{1}?fields=reputation&locale=en_GB&apikey='
                                             '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            char_name = parsed_json.name
-            realm = parsed_json.realm
-            faction = [{'name': p.name, 'standing': p.standing, 'value': p.value, 'max': p.max} for p in
-                       parsed_json.reputation]
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
+            faction = [{'name': p['name'], 'standing': p['standing'], 'value': p['value'], 'max': p.max} for p in
+                       parsed_json['reputation']]
 
         if resp.status == 200:
             return True, char_name, realm, faction
