@@ -185,3 +185,15 @@ class WowAPI:
             parsed_json = json.loads(await resp.text())
             char_name = parsed_json.name
             realm = parsed_json.realm
+
+            for bracket in parsed_json.pvp.brackets:
+                pvp_info = {'bracket': bracket, 'slug': bracket.slug, 'rating': bracket.rating, 'weekly played':
+                    bracket.weeklyPlayed, 'weekly won': bracket.weeklyWon, 'weekly lost': bracket.weeklyLost,
+                            'season played': bracket.seasonPlayed, 'season won': bracket.seasonWon, 'season lost':
+                                bracket.seasonLost}
+
+            if resp.status == 200:
+                return True, pvp_info, char_name, realm
+            elif resp.status == 404:
+                reason = parsed_json.reason
+                return False, reason
