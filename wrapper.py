@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import json
 from apikey import api_key
 
@@ -20,25 +21,28 @@ class WowAPI:
     def parse_gear(self, item):
         return {'name': item.name, 'icon': self.create_icon_url(item.icon), 'quality': item.quality}
 
+    def close(self):
+        self.session.close()
+
     # Get the character stats of a selected character in a selected realm
     async def get_character_stats(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=stats&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            name = parsed_json.name                         # Character name
-            intellect = parsed_json.stats.int               # Intellect
-            strength = parsed_json.stats.str                # Strength
-            agility = parsed_json.stats.agi                 # Agility
-            stamina = parsed_json.stats.sta                 # Stamina
-            haste = parsed_json.stats.haste                 # Haste
-            crit = parsed_json.stats.crit                   # Crit
-            versatility = parsed_json.stats.versatility     # Versatility
+            name = parsed_json['name']                            # Character name
+            intellect = parsed_json['stats']['int']               # Intellect
+            strength = parsed_json['stats']['str']                # Strength
+            agility = parsed_json['stats']['agi']                 # Agility
+            stamina = parsed_json['stats']['sta']                 # Stamina
+            haste = parsed_json['stats']['haste']                 # Haste
+            crit = parsed_json['stats']['crit']                   # Crit
+            versatility = parsed_json['stats']['versatility']     # Versatility
 
         if resp.status == 200:  # Check for a 200 response code and return the variables as a dict
             return True, {'name': name, 'intellect': intellect, 'strength': strength, 'agility': agility, 'stamina':
                 stamina, 'haste': haste, 'crit': crit, 'versatility': versatility}
         elif resp.status == 404:  # If the code comes back as 404, return the reason as a dict value
-            reason = parsed_json.reason
+            reason = parsed_json['reason']
             return False, reason
 
     async def get_realm_status(self, realm):
@@ -50,7 +54,7 @@ class WowAPI:
         if resp.status == 200:
             return True, realm
         elif resp.status == 404:
-            reason = parsed_json.reason
+            reason = parsed_json['reason']
             return False, reason
 
     async def get_talents(self, realm, character):
@@ -70,7 +74,7 @@ class WowAPI:
         if resp.status == 200:
             return True, char_name, realm, talents
         elif resp.status == 404:
-            reason = parsed_json.reason
+            reason = parsed_json['reason']
             return False, reason
 
     async def get_professions(self, realm, character):
@@ -85,7 +89,7 @@ class WowAPI:
         if resp.status == 200:
             return True, char_name, realm, professions
         elif resp.status == 404:
-            reason = parsed_json.reason
+            reason = parsed_json['reason']
             return False, reason
 
     async def get_reputation(self, realm, character):
@@ -101,7 +105,7 @@ class WowAPI:
         if resp.status == 200:
             return True, char_name, realm, faction
         elif resp.status == 404:
-            reason = parsed_json.reason
+            reason = parsed_json['reason']
             return False, reason
 
     async def get_gear(self, realm, character):
@@ -109,8 +113,8 @@ class WowAPI:
                                             'character/{0}/{1}?fields=items&locale=en_GB&apikey={apikey}'.format(
                                                 realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            char_name = parsed_json.name
-            realm = parsed_json.realm
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
             average_item_level = parsed_json.items.averageItemLevel
             average_item_level_equipped = parsed_json.items.averageItemLevelEquipped
 
@@ -133,7 +137,7 @@ class WowAPI:
                 return True, char_name, realm, average_item_level, average_item_level_equipped, head, neck, shoulder,\
                        back, chest, wrist, hands, waist, legs, feet, finger1, finger2, trinket1, trinket2
             elif resp.status == 404:
-                reason = parsed_json.reason
+                reason = parsed_json['reason']
                 return False, reason
 
     async def get_mounts(self, realm, character):
@@ -141,41 +145,42 @@ class WowAPI:
                                             'character/{0}/{1}?fields=mounts&locale=en_GB&apikey='
                                             '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            char_name = parsed_json.name
-            realm = parsed_json.realm
-            mounts_collected = parsed_json.mounts.numCollected
-            mounts_not_collected = parsed_json.mounts.numNotCollected
-            mounts = [{'name': mount.name, 'icon': self.create_icon_url(mount.icon)} for mount in
-                      parsed_json.mounts.collected]
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
+            mounts_collected = parsed_json['mounts']['numCollected']
+            mounts_not_collected = parsed_json['mounts']['numNotCollected']
+            mounts = [{'name': mount['name'], 'icon': self.create_icon_url(mount['icon'])} for mount in
+                      parsed_json['mounts']['collected']]
 
             if resp.status == 200:
                 return True, char_name, realm, mounts_collected, mounts_not_collected, mounts
             elif resp.status == 404:
-                reason = parsed_json.reason
+                reason = parsed_json['reason']
                 return False, reason
 
     async def get_progression(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=progression&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            char_name = parsed_json.name
-            realm = parsed_json.realm
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
 
             progression = []
-            for raid in parsed_json.progression:
+            for raid in parsed_json['progression']:
                 bosses = []
-                for boss in raid.bosses:
-                    completed_boss = {'name': boss.name, 'lfr kills': boss.lfrKills, 'normal kills': boss.normalKills,
-                                      'heroic kills': boss.heroicKills, 'mythic kills': boss.mythicKills}
+                for boss in raid['bosses']:
+                    completed_boss = {'name': boss['name'], 'lfr kills': boss['lfrKills'], 'normal kills':
+                        boss['normalKills'],
+                                      'heroic kills': boss['heroicKills'], 'mythic kills': boss['mythicKills']}
                     bosses.append(completed_boss)
-                    completed_raid = {'name': raid.name, 'lfr': raid.lfr, 'normal': raid.normal, 'heroic':
-                        raid.heroic, 'mythic': raid.mythic, 'bosses': bosses}
+                    completed_raid = {'name': raid['name'], 'lfr': raid['lfr'], 'normal': raid['normal'], 'heroic':
+                        raid['heroic'], 'mythic': raid['mythic'], 'bosses': bosses}
                     progression.append(completed_raid)
 
             if resp.status == 200:
                 return True, char_name, realm, progression
             elif resp.status == 404:
-                reason = parsed_json.reason
+                reason = parsed_json['reason']
                 return False, reason
 
     #  TODO: Finish this!  Not a list structure
@@ -195,7 +200,18 @@ class WowAPI:
                 pvp_bracket.append(pvp_info)
 
             if resp.status == 200:
-                return True, pvp_info, char_name, realm
+                return True, char_name, realm, pvp_bracket
             elif resp.status == 404:
-                reason = parsed_json.reason
+                reason = parsed_json['reason']
                 return False, reason
+
+async def main():
+    w = WowAPI()
+    print(await w.get_mounts('Silvermoon', 'Selariaana'))
+    w.close()
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+
+
+
