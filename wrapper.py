@@ -57,6 +57,7 @@ class WowAPI:
             reason = parsed_json['reason']
             return False, reason
 
+    # TODO: Fix KeyError: 'spec' (line 72)
     async def get_talents(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=talents&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
@@ -67,8 +68,8 @@ class WowAPI:
             talents = []
             for item in parsed_json['talents']:
                 for item2 in item['talents']:
-                    talent = {'tier': item2['tier'], 'name': self.create_icon_url(item2['spell']['name']),
-                               'spec': item2['spec']['name'], 'icon': item2['spell']['icon']}
+                    talent = {'tier': item2['tier'], 'name': item2['spell']['name'],
+                               'spec': item2['spec']['name'], 'icon': self.create_icon_url(item2['spell']['icon'])}
                     talents.append(talent)
 
         if resp.status == 200:
@@ -100,7 +101,7 @@ class WowAPI:
             parsed_json = json.loads(await resp.text())
             char_name = parsed_json['name']
             realm = parsed_json['realm']
-            faction = [{'name': p['name'], 'standing': p['standing'], 'value': p['value'], 'max': p.max} for p in
+            faction = [{'name': p['name'], 'standing': p['standing'], 'value': p['value'], 'max': p['max']} for p in
                        parsed_json['reputation']]
 
         if resp.status == 200:
@@ -116,23 +117,23 @@ class WowAPI:
             parsed_json = json.loads(await resp.text())
             char_name = parsed_json['name']
             realm = parsed_json['realm']
-            average_item_level = parsed_json.items.averageItemLevel
-            average_item_level_equipped = parsed_json.items.averageItemLevelEquipped
+            average_item_level = parsed_json['items']['averageItemLevel']
+            average_item_level_equipped = parsed_json['items']['averageItemLevelEquipped']
 
-            head = self.parse_gear(parsed_json.items.head)
-            neck = self.parse_gear(parsed_json.items.neck)
-            shoulder = self.parse_gear(parsed_json.items.shoulder)
-            back = self.parse_gear(parsed_json.items.back)
-            chest = self.parse_gear(parsed_json.items.chest)
-            wrist = self.parse_gear(parsed_json.items.wrist)
-            hands = self.parse_gear(parsed_json.items.hands)
-            waist = self.parse_gear(parsed_json.items.waist)
-            legs = self.parse_gear(parsed_json.items.legs)
-            feet = self.parse_gear(parsed_json.items.feet)
-            finger1 = self.parse_gear(parsed_json.items.finger1)
-            finger2 = self.parse_gear(parsed_json.items.finger2)
-            trinket1 = self.parse_gear(parsed_json.items.trinket1)
-            trinket2 = self.parse_gear(parsed_json.items.trinket2)
+            head = self.parse_gear(parsed_json['items']['head'])
+            neck = self.parse_gear(parsed_json['items']['neck'])
+            shoulder = self.parse_gear(parsed_json['items']['shoulder'])
+            back = self.parse_gear(parsed_json['items']['back'])
+            chest = self.parse_gear(parsed_json['items']['chest'])
+            wrist = self.parse_gear(parsed_json['items']['wrist'])
+            hands = self.parse_gear(parsed_json['items']['hands'])
+            waist = self.parse_gear(parsed_json['items']['waist'])
+            legs = self.parse_gear(parsed_json['items']['legs'])
+            feet = self.parse_gear(parsed_json['items']['feet'])
+            finger1 = self.parse_gear(parsed_json['items']['finger1'])
+            finger2 = self.parse_gear(parsed_json['items']['finger2'])
+            trinket1 = self.parse_gear(parsed_json['items']['trinket1'])
+            trinket2 = self.parse_gear(parsed_json['items']['trinket2'])
 
             if resp.status == 200:
                 return True, char_name, realm, average_item_level, average_item_level_equipped, head, neck, shoulder,\
@@ -159,6 +160,7 @@ class WowAPI:
                 reason = parsed_json['reason']
                 return False, reason
 
+    # TODO: Fix TypeError: string indices must be integers (line 173)
     async def get_progression(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=progression&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
@@ -189,15 +191,15 @@ class WowAPI:
         async with self.session.get(self.base_url + 'character/{0}/{1}/?fields=pvp&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
-            char_name = parsed_json.name
-            realm = parsed_json.realm
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
 
             pvp_bracket = []
-            for bracket in parsed_json.pvp.brackets:
-                pvp_info = {'bracket': bracket, 'slug': bracket.slug, 'rating': bracket.rating, 'weekly played':
-                    bracket.weeklyPlayed, 'weekly won': bracket.weeklyWon, 'weekly lost': bracket.weeklyLost,
-                            'season played': bracket.seasonPlayed, 'season won': bracket.seasonWon, 'season lost':
-                                bracket.seasonLost}
+            for bracket in parsed_json['pvp']['brackets']:
+                pvp_info = {'bracket': bracket, 'slug': bracket['slug'], 'rating': bracket['rating'], 'weekly played':
+                    bracket['weeklyPlayed'], 'weekly won': bracket['weeklyWon'], 'weekly lost': bracket['weeklyLost'],
+                            'season played': bracket['seasonPlayed'], 'season won': bracket['seasonWon'], 'season lost':
+                                bracket['seasonLost']}
                 pvp_bracket.append(pvp_info)
 
             if resp.status == 200:
@@ -208,7 +210,7 @@ class WowAPI:
 
 async def main():
     w = WowAPI()
-    print(await w.get_mounts('Silvermoon', 'Selariaana'))
+    print(await w.get_progression('Silvermoon', 'Selariaana'))
     w.close()
 
 loop = asyncio.get_event_loop()
