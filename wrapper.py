@@ -193,7 +193,7 @@ class WowAPI:
                 return False, reason
 
     async def get_pvp(self, realm, character):
-        async with self.session.get(self.base_url + 'character/{0}/{1}/?fields=pvp&locale=en_GB&apikey='
+        async with self.session.get(self.base_url + 'character/{0}/{1}?fields=pvp&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
             parsed_json = json.loads(await resp.text())
             char_name = parsed_json['name']
@@ -201,10 +201,11 @@ class WowAPI:
 
             pvp_bracket = []
             for bracket in parsed_json['pvp']['brackets']:
-                pvp_info = {'bracket': bracket, 'slug': bracket['slug'], 'rating': bracket['rating'], 'weekly played':
-                    bracket['weeklyPlayed'], 'weeklyWon': bracket['weeklyWon'], 'weeklyLost': bracket['weeklyLost'],
-                            'seasonPlayed': bracket['seasonPlayed'], 'seasonWon': bracket['seasonWon'], 'seasonLost':
-                                bracket['seasonLost']}
+                b = parsed_json['pvp']['brackets'][bracket]
+                pvp_info = {'bracket': bracket, 'slug': b['slug'], 'rating': b['rating'], 'weekly played':
+                    b['weeklyPlayed'], 'weeklyWon': b['weeklyWon'], 'weeklyLost': b['weeklyLost'],
+                            'seasonPlayed': b['seasonPlayed'], 'seasonWon': b['seasonWon'], 'seasonLost':
+                                b['seasonLost']}
                 pvp_bracket.append(pvp_info)
 
             if resp.status == 200:
@@ -233,7 +234,7 @@ class WowAPI:
 
 async def main():
     w = WowAPI()
-    print(await w.get_progression('Silvermoon', 'Selariaana'))
+    print(await w.get_pvp('Silvermoon', 'Selariaana'))
     w.close()
 
 loop = asyncio.get_event_loop()
