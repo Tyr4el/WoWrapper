@@ -161,7 +161,6 @@ class WowAPI:
                 reason = parsed_json['reason']
                 return False, reason
 
-    # TODO: Fix TypeError: string indices must be integers (line 173)
     async def get_progression(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=progression&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
@@ -170,15 +169,21 @@ class WowAPI:
             realm = parsed_json['realm']
 
             progression = []
-            for raid in parsed_json['progression']:
+            for raid in parsed_json['progression']['raids']:
                 bosses = []
+                completed_raid = {'name': raid['name'], 'lfr': raid['lfr'], 'normal': raid['normal'], 'heroic':
+                    raid['heroic'], 'mythic': raid['mythic'], 'bosses': bosses}
                 for boss in raid['bosses']:
-                    completed_boss = {'name': boss['name'], 'lfr kills': boss['lfrKills'], 'normal kills':
-                        boss['normalKills'],
-                                      'heroic kills': boss['heroicKills'], 'mythic kills': boss['mythicKills']}
+                    completed_boss = {'name': boss['name']}
+                    if 'lfrKills' in boss:
+                        completed_boss.update({'lfr kills': boss['lfrKills']})
+                    if 'normalKills' in boss:
+                        completed_boss.update({'normal kills': boss['normalKills']})
+                    if 'heroicKills' in boss:
+                        completed_boss.update({'heroic kills': boss['heroicKills']})
+                    if 'mythicKills' in boss:
+                        completed_boss.update({'mythic kills': boss['mythicKills']})
                     bosses.append(completed_boss)
-                    completed_raid = {'name': raid['name'], 'lfr': raid['lfr'], 'normal': raid['normal'], 'heroic':
-                        raid['heroic'], 'mythic': raid['mythic'], 'bosses': bosses}
                     progression.append(completed_raid)
 
             if resp.status == 200:
@@ -211,7 +216,7 @@ class WowAPI:
 
 async def main():
     w = WowAPI()
-    print(await w.get_talents('Silvermoon', 'Selariaana'))
+    print(await w.get_progression('Silvermoon', 'Selariaana'))
     w.close()
 
 loop = asyncio.get_event_loop()
