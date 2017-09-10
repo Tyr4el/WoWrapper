@@ -15,4 +15,4 @@ class Items:
                 return False
 
 i = Items()
-print(i.get_item('Worn Axe'))
+print(i.get_item('Vestige of Light'))

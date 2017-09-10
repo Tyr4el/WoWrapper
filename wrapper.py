@@ -233,7 +233,7 @@ class WowAPI:
 
 async def main():
     w = WowAPI()
-    print(await w.get_titles('Silvermoon', 'Selariaana'))
+    print(await w.get_progression('Silvermoon', 'Selariaana'))
     w.close()
 
 loop = asyncio.get_event_loop()
