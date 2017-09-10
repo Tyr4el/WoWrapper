@@ -192,7 +192,6 @@ class WowAPI:
                 reason = parsed_json['reason']
                 return False, reason
 
-    #  TODO: Finish this!  Not a list structure
     async def get_pvp(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}/?fields=pvp&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
@@ -214,9 +213,27 @@ class WowAPI:
                 reason = parsed_json['reason']
                 return False, reason
 
+    async def get_titles(self, realm, character):
+        async with self.session.get(self.base_url + 'character/{0}/{1}?fields=titles&locale=en_GB&apikey='
+                                                    '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
+            parsed_json = json.loads(await resp.text())
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
+
+            titles_collected = []
+            for title in parsed_json['titles']:
+                title_name = {'name': title['name']}
+                titles_collected.append(title_name)
+
+            if resp.status == 200:
+                return True, char_name, realm, titles_collected
+            elif resp.status == 404:
+                reason = parsed_json['reason']
+                return False, reason
+
 async def main():
     w = WowAPI()
-    print(await w.get_progression('Silvermoon', 'Selariaana'))
+    print(await w.get_titles('Silvermoon', 'Selariaana'))
     w.close()
 
 loop = asyncio.get_event_loop()
