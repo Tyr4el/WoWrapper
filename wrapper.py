@@ -57,7 +57,6 @@ class WowAPI:
             reason = parsed_json['reason']
             return False, reason
 
-    # TODO: Fix KeyError: 'spec' (line 72)
     async def get_talents(self, realm, character):
         async with self.session.get(self.base_url + 'character/{0}/{1}?fields=talents&locale=en_GB&apikey='
                                                     '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
@@ -68,8 +67,10 @@ class WowAPI:
             talents = []
             for item in parsed_json['talents']:
                 for item2 in item['talents']:
-                    talent = {'tier': item2['tier'], 'name': item2['spell']['name'],
-                               'spec': item2['spec']['name'], 'icon': self.create_icon_url(item2['spell']['icon'])}
+                    talent = {'tier': item2['tier'], 'name': item2['spell']['name'], 'icon': self.create_icon_url(
+                        item2['spell']['icon'])}
+                    if 'spec' in item2:
+                        talent.update({'spec': item2['spec']['name']})
                     talents.append(talent)
 
         if resp.status == 200:
@@ -210,7 +211,7 @@ class WowAPI:
 
 async def main():
     w = WowAPI()
-    print(await w.get_progression('Silvermoon', 'Selariaana'))
+    print(await w.get_talents('Silvermoon', 'Selariaana'))
     w.close()
 
 loop = asyncio.get_event_loop()
