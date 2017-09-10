@@ -6,8 +6,8 @@ with open('ItemSparse.json') as file:
 
 new_data = []
 for item in parsed_json:
-    new_json = {'name': parsed_json['Name'], 'item level': parsed_json['ItemLevel'], 'quality':
-        parsed_json['Quality']}
+    new_json = {'Name': item['Name'], 'ItemLevel': item['ItemLevel'], 'Quality':
+        item['Quality'], 'm_ID': item['m_ID']}
     new_data.append(new_json)
 
 with open('Items.json', 'w') as new_file:

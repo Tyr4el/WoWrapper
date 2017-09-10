@@ -176,13 +176,13 @@ class WowAPI:
                 for boss in raid['bosses']:
                     completed_boss = {'name': boss['name']}
                     if 'lfrKills' in boss:
-                        completed_boss.update({'lfr kills': boss['lfrKills']})
+                        completed_boss.update({'lfrKills': boss['lfrKills']})
                     if 'normalKills' in boss:
-                        completed_boss.update({'normal kills': boss['normalKills']})
+                        completed_boss.update({'normalKills': boss['normalKills']})
                     if 'heroicKills' in boss:
-                        completed_boss.update({'heroic kills': boss['heroicKills']})
+                        completed_boss.update({'heroicKills': boss['heroicKills']})
                     if 'mythicKills' in boss:
-                        completed_boss.update({'mythic kills': boss['mythicKills']})
+                        completed_boss.update({'mythicKills': boss['mythicKills']})
                     bosses.append(completed_boss)
                     progression.append(completed_raid)
 
@@ -202,8 +202,8 @@ class WowAPI:
             pvp_bracket = []
             for bracket in parsed_json['pvp']['brackets']:
                 pvp_info = {'bracket': bracket, 'slug': bracket['slug'], 'rating': bracket['rating'], 'weekly played':
-                    bracket['weeklyPlayed'], 'weekly won': bracket['weeklyWon'], 'weekly lost': bracket['weeklyLost'],
-                            'season played': bracket['seasonPlayed'], 'season won': bracket['seasonWon'], 'season lost':
+                    bracket['weeklyPlayed'], 'weeklyWon': bracket['weeklyWon'], 'weeklyLost': bracket['weeklyLost'],
+                            'seasonPlayed': bracket['seasonPlayed'], 'seasonWon': bracket['seasonWon'], 'seasonLost':
                                 bracket['seasonLost']}
                 pvp_bracket.append(pvp_info)
 
