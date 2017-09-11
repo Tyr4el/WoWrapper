@@ -268,6 +268,8 @@ class WowAPI:
                     'level': mchar['level'],
                     'achievementPoints': mchar['achievementPoints']
                 }
+
+                spec = None
                 if 'spec' in mchar:
                     spec = mchar['spec']
                     character['name'] = spec['name']
@@ -281,10 +283,44 @@ class WowAPI:
                 reason = parsed_json['reason']
                 return False, reason
 
+    async def get_pets(self, realm, character):
+        async with self.session.get(self.base_url + 'character/{0}/{1}?fields=pets&locale=en_GB&apikey='
+                                                    '{apikey}'.format(realm, character, apikey=self.api_key)) as resp:
+            parsed_json = json.loads(await resp.text())
+            char_name = parsed_json['name']
+            realm = parsed_json['realm']
+
+            pets = []
+            num_collected = parsed_json['pets']['numCollected']
+            num_not_collected = parsed_json['pets']['numNotCollected']
+            for pet in parsed_json['pets']['collected']:
+                pet_collected = {
+                    'name': pet['name'],
+                    'icon': self.create_icon_url(pet['icon'])
+                    }
+
+                pets.append(pet_collected)
+
+                stats = pet['stats']
+
+                pet_stats = {
+                    'level': stats['level'],
+                    'health': stats['health'],
+                    'power': stats['power'],
+                    'speed': stats['speed']
+                }
+
+                pet_collected.update(pet_stats)
+
+            if resp.status == 200:
+                return True, char_name, realm, num_collected, num_not_collected, pets
+            elif resp.status == 404:
+                reason = parsed_json['reason']
+                return False, reason
 
 async def main():
     w = WowAPI()
-    print(await w.get_guild_members('Silvermoon', 'Ascended Khaos'))
+    print(await w.get_pets('Silvermoon', 'Selariaana'))
     w.close()
 
 loop = asyncio.get_event_loop()
