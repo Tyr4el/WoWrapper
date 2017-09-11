@@ -67,8 +67,10 @@ class WowAPI:
             talents = []
             for item in parsed_json['talents']:
                 for item2 in item['talents']:
-                    talent = {'tier': item2['tier'], 'name': item2['spell']['name'], 'icon': self.create_icon_url(
-                        item2['spell']['icon'])}
+                    talent = {
+                        'tier': item2['tier'],
+                        'name': item2['spell']['name'],
+                        'icon': self.create_icon_url(item2['spell']['icon'])}
                     if 'spec' in item2:
                         talent.update({'spec': item2['spec']['name']})
                     talents.append(talent)
@@ -85,9 +87,11 @@ class WowAPI:
             parsed_json = json.loads(await resp.text())
             char_name = parsed_json['name']
             realm = parsed_json['realm']
-            professions = [{'name': p['name'], 'icon': self.create_icon_url(p['icon']), 'rank': p['rank'],
-                            'max': p['max']}
-                           for p in parsed_json['professions']['primary']]
+            professions = [{
+                'name': p['name'],
+                'icon': self.create_icon_url(p['icon']),
+                'rank': p['rank'],
+                'max': p['max']} for p in parsed_json['professions']['primary']]
 
         if resp.status == 200:
             return True, char_name, realm, professions
@@ -152,8 +156,9 @@ class WowAPI:
             realm = parsed_json['realm']
             mounts_collected = parsed_json['mounts']['numCollected']
             mounts_not_collected = parsed_json['mounts']['numNotCollected']
-            mounts = [{'name': mount['name'], 'icon': self.create_icon_url(mount['icon'])} for mount in
-                      parsed_json['mounts']['collected']]
+            mounts = [{
+                'name': mount['name'],
+                'icon': self.create_icon_url(mount['icon'])} for mount in parsed_json['mounts']['collected']]
 
             if resp.status == 200:
                 return True, char_name, realm, mounts_collected, mounts_not_collected, mounts
@@ -171,8 +176,14 @@ class WowAPI:
             progression = []
             for raid in parsed_json['progression']['raids']:
                 bosses = []
-                completed_raid = {'name': raid['name'], 'lfr': raid['lfr'], 'normal': raid['normal'], 'heroic':
-                    raid['heroic'], 'mythic': raid['mythic'], 'bosses': bosses}
+                completed_raid = {
+                    'name': raid['name'],
+                    'lfr': raid['lfr'],
+                    'normal': raid['normal'],
+                    'heroic': raid['heroic'],
+                    'mythic': raid['mythic'],
+                    'bosses': bosses
+                }
                 for boss in raid['bosses']:
                     completed_boss = {'name': boss['name']}
                     if 'lfrKills' in boss:
@@ -202,10 +213,17 @@ class WowAPI:
             pvp_bracket = []
             for bracket in parsed_json['pvp']['brackets']:
                 b = parsed_json['pvp']['brackets'][bracket]
-                pvp_info = {'bracket': bracket, 'slug': b['slug'], 'rating': b['rating'], 'weekly played':
-                    b['weeklyPlayed'], 'weeklyWon': b['weeklyWon'], 'weeklyLost': b['weeklyLost'],
-                            'seasonPlayed': b['seasonPlayed'], 'seasonWon': b['seasonWon'], 'seasonLost':
-                                b['seasonLost']}
+                pvp_info = {
+                    'bracket': bracket,
+                    'slug': b['slug'],
+                    'rating': b['rating'],
+                    'weekly played': b['weeklyPlayed'],
+                    'weeklyWon': b['weeklyWon'],
+                    'weeklyLost': b['weeklyLost'],
+                    'seasonPlayed': b['seasonPlayed'],
+                    'seasonWon': b['seasonWon'],
+                    'seasonLost': b['seasonLost']
+                }
                 pvp_bracket.append(pvp_info)
 
             if resp.status == 200:
@@ -241,12 +259,20 @@ class WowAPI:
 
             members = []
             for member in parsed_json['members']:
-                character = {'name': member['character']['name'], 'class': member['character']['class'],
-                             'race': member['character']['race'],
-                             'gender': member['character']['gender'], 'level': member['character']['level'],
-                             'achievementPoints': member['character']['achievementPoints']}
-                for spec in member['character']['spec']:
-                    print(spec)
+                mchar = member['character']
+                character = {
+                    'name': mchar['name'],
+                    'class': mchar['class'],
+                    'race': mchar['race'],
+                    'gender': mchar['gender'],
+                    'level': mchar['level'],
+                    'achievementPoints': mchar['achievementPoints']
+                }
+                if 'spec' in mchar:
+                    spec = mchar['spec']
+                    character['name'] = spec['name']
+
+                character['icon'] = self.create_icon_url(spec['icon'])
                 members.append(character)
 
             if resp.status == 200:
