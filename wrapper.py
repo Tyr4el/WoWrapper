@@ -232,9 +232,33 @@ class WowAPI:
                 reason = parsed_json['reason']
                 return False, reason
 
+    async def get_guild_members(self, realm, guild):
+        async with self.session.get(self.base_url + 'guild/{0}/{1}?fields=members&locale=en_GB&apikey='
+                                                    '{apikey}'.format(realm, guild, apikey=self.api_key)) as resp:
+            parsed_json = json.loads(await resp.text())
+            guild_name = parsed_json['name']
+            realm = parsed_json['realm']
+
+            members = []
+            for member in parsed_json['members']:
+                character = {'name': member['character']['name'], 'class': member['character']['class'],
+                             'race': member['character']['race'],
+                             'gender': member['character']['gender'], 'level': member['character']['level'],
+                             'achievementPoints': member['character']['achievementPoints']}
+                for spec in member['character']['spec']:
+                    print(spec)
+                members.append(character)
+
+            if resp.status == 200:
+                return True, guild_name, realm, members
+            elif resp.status == 404:
+                reason = parsed_json['reason']
+                return False, reason
+
+
 async def main():
     w = WowAPI()
-    print(await w.get_pvp('Silvermoon', 'Selariaana'))
+    print(await w.get_guild_members('Silvermoon', 'Ascended Khaos'))
     w.close()
 
 loop = asyncio.get_event_loop()
