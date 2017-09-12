@@ -70,7 +70,8 @@ class WowAPI:
                     talent = {
                         'tier': item2['tier'],
                         'name': item2['spell']['name'],
-                        'icon': self.create_icon_url(item2['spell']['icon'])}
+                        'icon': self.create_icon_url(item2['spell']['icon'])
+                    }
                     if 'spec' in item2:
                         talent.update({'spec': item2['spec']['name']})
                     talents.append(talent)
@@ -279,6 +280,41 @@ class WowAPI:
 
             if resp.status == 200:
                 return True, guild_name, realm, members
+            elif resp.status == 404:
+                reason = parsed_json['reason']
+                return False, reason
+
+    async def get_news(self, realm, guild):
+        async with self.session.get(self.base_url + 'guild/{0}/{1}?fields=news&locale=en_GB&apikey={apikey}'.format(
+                realm, guild, apikey=self.api_key)) as resp:
+            parsed_json = json.loads(await resp.text())
+            guild_name = parsed_json['name']
+            realm = parsed_json['realm']
+
+            news = []
+            for item in parsed_json['news']:
+                news_item = {
+                    'type': item['type'],
+                    'character': item['character'],
+                }
+                news.append(news_item)
+
+                if 'itemId' in item:
+                    news_item['itemId'] = item['itemId']
+
+                if item['type'] == 'playerAchievement':
+                    achievement = {
+                        'type': item['type'],
+                        'character': item['character'],
+                        'id': item['achievement']['id'],
+                        'title': item['achievement']['title'],
+                        'description': item['achievement']['description'],
+                        'icon': self.create_icon_url(item['achievement']['icon'])
+                    }
+                    news_item.update(achievement)
+
+            if resp.status == 200:
+                return True, realm, guild_name, news
             elif resp.status == 404:
                 reason = parsed_json['reason']
                 return False, reason
